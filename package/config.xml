@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets" id="radio" version="0.1">
+  <name>Radio</name>
+  <icon src="icon.svg"/>
+  <content src="bin/radio" type="application/x-executable"/>
+  <description>This is a demo Radio application</description>
+  <author>Qt</author>
+  <license>APL 2.0</license>
+</widget>
+
+
