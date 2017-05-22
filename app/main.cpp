@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2016 The Qt Company Ltd.
- * Copyright (C) 2016 Scott Murray <scott.murray@konsulko.com>
+ * Copyright (C) 2016, 2017 Konsulko Group
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
  */
 
 #include <QtCore/QDebug>
+#include <QtCore/QCommandLineParser>
+#include <QtCore/QUrlQuery>
 #include <QtCore/QSettings>
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 #include <QtQml/QQmlContext>
 #include <QtQuickControls2/QQuickStyle>
-#include <QtMultimedia/QRadioTunerControl>
 #include <stdlib.h>
 #include "PresetDataObject.h"
 
@@ -44,6 +45,14 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     QQuickStyle::setStyle("AGL");
+
+    QCommandLineParser parser;
+    parser.addPositionalArgument("port", app.translate("main", "port for binding"));
+    parser.addPositionalArgument("secret", app.translate("main", "secret for binding"));
+    parser.addHelpOption();
+    parser.addVersionOption();
+    parser.process(app);
+    QStringList positionalArguments = parser.positionalArguments();
 
     // Read presets from configuration file
     //
@@ -70,13 +79,26 @@ int main(int argc, char *argv[])
         pSettings->setArrayIndex(i);
         presetDataList.append(new PresetDataObject(pSettings->value("title").toString(),
 						   pSettings->value("frequency").toInt(),
-						   QRadioTuner::FM));
+						   1));
     }
     pSettings->endArray();
 
     QQmlApplicationEngine engine;
     QQmlContext *context = engine.rootContext();
     context->setContextProperty("presetModel", QVariant::fromValue(presetDataList));
+    if (positionalArguments.length() == 2) {
+        int port = positionalArguments.takeFirst().toInt();
+        QString secret = positionalArguments.takeFirst();
+        QUrl bindingAddress;
+        bindingAddress.setScheme(QStringLiteral("ws"));
+        bindingAddress.setHost(QStringLiteral("localhost"));
+        bindingAddress.setPort(port);
+        bindingAddress.setPath(QStringLiteral("/api"));
+        QUrlQuery query;
+        query.addQueryItem(QStringLiteral("token"), secret);
+        bindingAddress.setQuery(query);
+        context->setContextProperty(QStringLiteral("bindingAddress"), bindingAddress);
+    }
     engine.load(QUrl(QStringLiteral("qrc:/Radio.qml")));
 
     return app.exec();

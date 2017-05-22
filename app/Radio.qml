@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2016 The Qt Company Ltd.
+ * Copyright (C) 2017 Konsulko Group
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,28 +18,22 @@
 import QtQuick 2.6
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 2.0
-import QtMultimedia 5.5
 import AGL.Demo.Controls 1.0
+import 'api' as API
 
 ApplicationWindow {
     id: root
 
-    Radio {
+    API.Binding {
         id: radio
+
         property string title
+
         onBandChanged: frequency = minimumFrequency
         onStationFound: title = stationId
         onFrequencyChanged: {
             title = ''
             slider.value = frequency
-        }
-
-        function freq2str(freq) {
-            if (freq > 5000000) {
-                return '%1 MHz'.arg((freq / 1000000).toFixed(1))
-            } else {
-                return '%1 kHz'.arg((freq / 1000).toFixed(0))
-            }
         }
     }
 
@@ -82,7 +77,7 @@ ApplicationWindow {
 //                                offImage: './images/FM_Icons_FM.svg'
 //                                onImage: './images/FM_Icons_AM.svg'
 //                                onCheckedChanged: {
-//                                    radio.band = checked ? Radio.AM : Radio.FM
+//                                    radio.band = checked ? radio.amBand : radio.fmBand
 //                                    radio.frequency = radio.minimumFrequency
 //                                }
 //                            }
@@ -129,7 +124,11 @@ ApplicationWindow {
                     }
                     RowLayout {
                         Layout.fillHeight: true
-                        Item { Layout.fillWidth: true }
+
+                        Label {
+                            text: 'TUNE'
+                        }
+
                         ImageButton {
                             offImage: './images/AGL_MediaPlayer_BackArrow.svg'
                             Timer {
@@ -140,21 +139,7 @@ ApplicationWindow {
                                 onTriggered: radio.tuneDown()
                             }
                         }
-                        ImageButton {
-                            id: play
-                            offImage: './images/AGL_MediaPlayer_Player_Play.svg'
-                            onClicked: radio.start()
-                            states: [
-                                State {
-                                    when: radio.state === Radio.ActiveState
-                                    PropertyChanges {
-                                        target: play
-                                        offImage: './images/AGL_MediaPlayer_Player_Pause.svg'
-                                        onClicked: radio.stop()
-                                    }
-                                }
-                            ]
-                        }
+
                         ImageButton {
                             offImage: './images/AGL_MediaPlayer_ForwardArrow.svg'
                             Timer {
@@ -167,6 +152,52 @@ ApplicationWindow {
                         }
 
                         Item { Layout.fillWidth: true }
+
+                        ImageButton {
+                            id: play
+                            offImage: './images/AGL_MediaPlayer_Player_Play.svg'
+                            onClicked: radio.start()
+                            states: [
+                                State {
+                                    when: radio.state === radio.activeState
+                                    PropertyChanges {
+                                        target: play
+                                        offImage: './images/AGL_MediaPlayer_Player_Pause.svg'
+                                        onClicked: radio.stop()
+                                    }
+                                }
+                            ]
+                        }
+
+                        Item { Layout.fillWidth: true }
+
+                        Label {
+                            //Layout.fillWidth: true
+                            text: 'SCAN'
+                        }
+
+                        ImageButton {
+                            offImage: './images/AGL_MediaPlayer_BackArrow.svg'
+                            Timer {
+                                running: parent.pressed
+                                triggeredOnStart: true
+                                interval: 100
+                                repeat: true
+                                onTriggered: radio.scanDown()
+                            }
+                        }
+
+                        ImageButton {
+                            offImage: './images/AGL_MediaPlayer_ForwardArrow.svg'
+                            Timer {
+                                running: parent.pressed
+                                triggeredOnStart: true
+                                interval: 100
+                                repeat: true
+                                onTriggered: radio.scanUp()
+                            }
+                        }
+
                     }
                 }
             }
@@ -214,9 +245,9 @@ ApplicationWindow {
                         Image {
                             source: {
                                 switch (model.modelData.band) {
-                                case Radio.FM:
+                                case radio.fmBand:
                                     return './images/FM_Icons_FM.svg'
-                                case Radio.AM:
+                                case radio.amBand:
                                     return './images/FM_Icons_AM.svg'
                                 }
                                 return null
