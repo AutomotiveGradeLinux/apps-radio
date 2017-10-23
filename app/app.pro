@@ -1,5 +1,5 @@
 TARGET = radio
-QT = quickcontrols2
+QT = quickcontrols2 qml
 
 HEADERS = PresetDataObject.h qlibwindowmanager.h qlibsoundmanager.h
 SOURCES = main.cpp PresetDataObject.cpp qlibwindowmanager.cpp qlibsoundmanager.cpp

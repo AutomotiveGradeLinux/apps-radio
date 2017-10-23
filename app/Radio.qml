@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016 The Qt Company Ltd.
  * Copyright (C) 2017 Konsulko Group
+ * Copyright (C) 2017 Toyota Motor Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +20,7 @@ import QtQuick 2.6
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 2.0
 import AGL.Demo.Controls 1.0
+import QtQml.StateMachine 1.0 as RSM
 import 'api' as API
 
 ApplicationWindow {
@@ -35,6 +37,169 @@ ApplicationWindow {
             title = ''
             slider.value = frequency
         }
+    }
+    property int  sourceID
+    property int  connectionID
+    signal playRadio
+    signal stopRadio
+    signal disconnected
+    signal paused
+    signal connected
+
+    RSM.StateMachine{
+        id: radioState
+        initialState: stop
+        running: true
+        RSM.State{
+            id: haveSoundRight
+            RSM.SignalTransition{
+                targetState: stop
+                signal: disconnected
+            }
+            RSM.SignalTransition{
+                targetState: pause
+                signal: paused
+            }
+            RSM.SignalTransition{
+                targetState: playing
+                signal: playRadio
+            }
+            onEntered: {
+                console.log("enter haveSoundRight")
+            }
+            onExited : {
+                // Nothing to do
+            }
+        }
+        RSM.State{
+            id: stop
+            RSM.SignalTransition{
+                targetState: haveSoundRight
+                signal: connected
+            }
+            onEntered: {
+                console.log("enter stop state")
+            }
+            onExited : {
+                // Nothing to do
+            }
+        }
+        RSM.State{
+            id: pause
+            RSM.SignalTransition{
+                targetState: haveSoundRight
+                signal: connected
+            }
+            RSM.SignalTransition{
+                targetState: stop
+                signal: disconnected
+            }
+            onEntered: {
+                console.log("enter pause state")
+            }
+            onExited : {
+                // Nothing to do
+            }
+        }
+        RSM.State{
+            id: playing
+            RSM.SignalTransition{
+                targetState: haveSoundRight
+                signal: stopRadio
+            }
+            RSM.SignalTransition{
+                targetState: lostSoundRight
+                signal: disconnected
+            }
+            RSM.SignalTransition{
+                targetState: temporaryLostSoundRight
+                signal: paused
+            }
+            onEntered: {
+                console.log("enter playing state")
+                radio.start()
+            }
+            onExited : {
+                radio.stop()
+            }
+        }
+        RSM.State{
+            id: lostSoundRight
+            RSM.SignalTransition{
+                targetState: playing
+                signal: connected
+            }
+            onEntered: {
+                console.log("enter lostSoundRight")
+            }
+            onExited : {
+            }
+        }
+        RSM.State{
+            id: temporaryLostSoundRight
+            RSM.SignalTransition{
+                targetState: playing
+                signal: connected
+            }
+            RSM.SignalTransition{
+                targetState: lostSoundRight
+                signal: disconnected
+            }
+            onEntered: {
+                console.log("enter temporaryLostSoundRight")
+            }
+            onExited : {
+            }
+        }
+    }
+
+    function slotReply(msg){
+        var jstr = JSON.stringify(msg)
+        var content = JSON.parse(jstr);
+        var verb = content.response.verb
+        var err = content.response.error
+        switch(verb)
+        {
+            case "connect":
+                if(err == 0){
+                    connectionID = content.response.mainConnectionID
+                    console.log("radio: mainConnectionID is " + connectionID)
+                }
+                break;
+            case "registerSource":
+                if(err == 0){
+                    sourceID = content.response.sourceID
+                }
+            default:
+                break;
+        }
+    }
+
+    function slotEvent(event,msg){
+        var jstr = JSON.stringify(msg)
+        var content = JSON.parse(jstr);
+        var eventName = content.event
+        switch(eventName)
+        {
+            case "soundmanager\/asyncSetSourceState":
+                if(sourceID == content.data.sourceID){
+                    smw.ackSetSourceState(content.data.handle, 0)
+                    switch(content.data.sourceState){
+                        case "on":
+                            connected()
+                            break;
+                        case "off":
+                            disconnected()
+                            break;
+                        case "paused":
+                            paused()
+                            break;
+                    }
+                }
+                break;
+            default:
+                break;
+        }     
     }
 
     ColumnLayout {
@@ -156,14 +321,18 @@ ApplicationWindow {
                         ImageButton {
                             id: play
                             offImage: './images/AGL_MediaPlayer_Player_Play.svg'
-                            onClicked: radio.start()
+                            onClicked: {
+                                playRadio()
+                            }
                             states: [
                                 State {
                                     when: radio.state === radio.activeState
                                     PropertyChanges {
                                         target: play
                                         offImage: './images/AGL_MediaPlayer_Player_Pause.svg'
-                                        onClicked: radio.stop()
+                                        onClicked: {
+                                            stopRadio()
+                                        }
                                     }
                                 }
                             ]
@@ -256,6 +425,9 @@ ApplicationWindow {
                     }
                 }
             }
+        }
+        Component.onCompleted: {
+            smw.registerSource("radio")
         }
     }
 }
