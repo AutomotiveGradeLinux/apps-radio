@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016 The Qt Company Ltd.
  * Copyright (C) 2016, 2017 Konsulko Group
+ * Copyright (C) 2016, 2017 Toyota Motor Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,25 +24,15 @@
 #include <QtQml/QQmlApplicationEngine>
 #include <QtQml/QQmlContext>
 #include <QtQuickControls2/QQuickStyle>
-#include <stdlib.h>
+#include <QQuickWindow>
 #include "PresetDataObject.h"
+#include "qlibwindowmanager.h"
 
-
-#ifdef HAVE_LIBHOMESCREEN
-#include <libhomescreen.hpp>
-#endif
+static QLibWindowmanager* qwm;
+static std::string myname = std::string("Radio");
 
 int main(int argc, char *argv[])
 {
-#ifdef HAVE_LIBHOMESCREEN
-    LibHomeScreen libHomeScreen;
-
-    if (!libHomeScreen.renderAppToAreaAllowed(0, 1)) {
-        qWarning() << "renderAppToAreaAllowed is denied";
-        return -1;
-    }
-#endif
-
     QGuiApplication app(argc, argv);
 
     QQuickStyle::setStyle("AGL");
@@ -98,8 +89,30 @@ int main(int argc, char *argv[])
         query.addQueryItem(QStringLiteral("token"), secret);
         bindingAddress.setQuery(query);
         context->setContextProperty(QStringLiteral("bindingAddress"), bindingAddress);
+
+        qwm = new QLibWindowmanager();
+        // WindowManager
+        if(qwm->init(port,secret) != 0){
+            exit(EXIT_FAILURE);
+        }
+        if (qwm->requestSurface(myname.c_str()) != 0) {
+            exit(EXIT_FAILURE);
+        }
+        qwm->set_event_handler(QLibWindowmanager::Event_SyncDraw, [qwm](json_object *object) {
+            fprintf(stderr, "Surface got syncDraw!\n");
+            qwm->endDraw(myname.c_str());
+            });
+        qwm->set_event_handler(QLibWindowmanager::Event_FlushDraw, [](json_object *object) {
+            fprintf(stderr, "Surface got flushDraw!\n");;
+            });
+
+        // Loading QML File
+        engine.load(QUrl(QStringLiteral("qrc:/Radio.qml")));
+        QObject *root = engine.rootObjects().first();
+        QQuickWindow *window = qobject_cast<QQuickWindow *>(root);
+        QObject::connect(window, SIGNAL(frameSwapped()),
+            qwm, SLOT(slotActivateSurface()));  // This should be disconnected, but when...
     }
-    engine.load(QUrl(QStringLiteral("qrc:/Radio.qml")));
 
     return app.exec();
 }

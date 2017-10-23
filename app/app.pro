@@ -1,8 +1,11 @@
 TARGET = radio
 QT = quickcontrols2
 
-HEADERS = PresetDataObject.h
-SOURCES = main.cpp PresetDataObject.cpp
+HEADERS = PresetDataObject.h qlibwindowmanager.h
+SOURCES = main.cpp PresetDataObject.cpp qlibwindowmanager.cpp
+
+CONFIG += link_pkgconfig
+PKGCONFIG += windowmanager
 
 RESOURCES += \
     radio.qrc \
