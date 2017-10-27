@@ -5,7 +5,7 @@ HEADERS = PresetDataObject.h qlibwindowmanager.h qlibsoundmanager.h
 SOURCES = main.cpp PresetDataObject.cpp qlibwindowmanager.cpp qlibsoundmanager.cpp
 
 CONFIG += link_pkgconfig
-PKGCONFIG += soundmanager windowmanager libhomescreen
+PKGCONFIG += libsoundmanager libwindowmanager libhomescreen
 
 RESOURCES += \
     radio.qrc \
