@@ -27,13 +27,13 @@
 #include <QQuickWindow>
 #include "PresetDataObject.h"
 #include <libhomescreen.hpp>
-#include "qlibwindowmanager.h"
+#include <qlibwindowmanager.h>
 #include "qlibsoundmanager.h"
 
 static LibHomeScreen* hs;
 static QLibWindowmanager* qwm;
 static QLibSoundmanager* smw;
-static std::string myname = std::string("Radio");
+static QString myname = QString("Radio");
 
 int main(int argc, char *argv[])
 {
@@ -104,12 +104,12 @@ int main(int argc, char *argv[])
         if(qwm->init(port,secret) != 0){
             exit(EXIT_FAILURE);
         }
-        if (qwm->requestSurface(myname.c_str()) != 0) {
+        if (qwm->requestSurface(myname) != 0) {
             exit(EXIT_FAILURE);
         }
         qwm->set_event_handler(QLibWindowmanager::Event_SyncDraw, [qwm](json_object *object) {
             fprintf(stderr, "Surface got syncDraw!\n");
-            qwm->endDraw(myname.c_str());
+            qwm->endDraw(myname);
             });
         qwm->set_event_handler(QLibWindowmanager::Event_FlushDraw, [&engine, smw](json_object *object) {
             fprintf(stderr, "Surface got flushDraw!\n");
@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
             if(myname == appname)
             {
                 qDebug("Surface %s got tapShortcut\n", appname);
-                qwm->activateSurface(myname.c_str());
+                qwm->activateSurface(myname);
             }
         });
 
