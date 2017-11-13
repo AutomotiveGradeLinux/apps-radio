@@ -28,7 +28,7 @@
 #include "PresetDataObject.h"
 #include <qlibhomescreen.h>
 #include <qlibwindowmanager.h>
-#include "qlibsoundmanager.h"
+#include <qlibsoundmanager.h>
 
 static QLibHomeScreen* hs;
 static QLibWindowmanager* qwm;
