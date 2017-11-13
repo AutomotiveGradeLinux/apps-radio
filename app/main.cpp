@@ -26,11 +26,11 @@
 #include <QtQuickControls2/QQuickStyle>
 #include <QQuickWindow>
 #include "PresetDataObject.h"
-#include <libhomescreen.hpp>
+#include <qlibhomescreen.h>
 #include <qlibwindowmanager.h>
 #include "qlibsoundmanager.h"
 
-static LibHomeScreen* hs;
+static QLibHomeScreen* hs;
 static QLibWindowmanager* qwm;
 static QLibSoundmanager* smw;
 static QString myname = QString("Radio");
@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
 
         std::string token = secret.toStdString();
 
-        hs = new LibHomeScreen();
+        hs = new QLibHomeScreen();
         qwm = new QLibWindowmanager();
         smw = new QLibSoundmanager();
 
@@ -119,8 +119,8 @@ int main(int argc, char *argv[])
             });
         
         // HomeScreen
-        hs->init(port, token.c_str());
-        hs->set_event_handler(LibHomeScreen::Event_TapShortcut, [qwm](json_object *object){
+        hs->init(port, secret);
+        hs->set_event_handler(QLibHomeScreen::Event_TapShortcut, [qwm](json_object *object){
             const char *appname = json_object_get_string(
                 json_object_object_get(object, "application_name"));
             if(myname == appname)
