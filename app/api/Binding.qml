@@ -106,6 +106,7 @@ WebSocket {
             } else if (event.event === "radio/station_found") {
                 if(scanningState == activeState) {
                     scanningState = stoppedState
+                    frequency = event.data.value
                     stationId = freq2str(event.data.value)
                     root.stationFound()
                 }
@@ -177,13 +178,17 @@ WebSocket {
     }
 
     function scanUp() {
-        scanningState = activeState
-        sendSocketMessage("scan_start", { direction: "forward" })
+        if(scanningState != activeState) {
+            scanningState = activeState
+            sendSocketMessage("scan_start", { direction: "forward" })
+        }
     }
 
     function scanDown() {
-        scanningState = activeState
-        sendSocketMessage("scan_start", { direction: "backward" })
+        if(scanningState != activeState) {
+            scanningState = activeState
+            sendSocketMessage("scan_start", { direction: "backward" })
+        }
     }
 
     function updateFrequencyRange(band) {

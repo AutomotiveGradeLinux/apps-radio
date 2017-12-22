@@ -30,7 +30,10 @@ ApplicationWindow {
         property string title
 
         onBandChanged: frequency = minimumFrequency
-        onStationFound: title = stationId
+        onStationFound: {
+            title = stationId
+            scanLabel.color = '#FFFFFF'
+        }
         onFrequencyChanged: {
             title = ''
             slider.value = frequency
@@ -172,6 +175,7 @@ ApplicationWindow {
                         Item { Layout.fillWidth: true }
 
                         Label {
+                            id: scanLabel
                             //Layout.fillWidth: true
                             text: 'SCAN'
                         }
@@ -183,7 +187,10 @@ ApplicationWindow {
                                 triggeredOnStart: true
                                 interval: 100
                                 repeat: true
-                                onTriggered: radio.scanDown()
+                                onTriggered: {
+                                    radio.scanDown()
+                                    scanLabel.color = '#59FF7F'
+                                }
                             }
                         }
 
@@ -194,7 +201,10 @@ ApplicationWindow {
                                 triggeredOnStart: true
                                 interval: 100
                                 repeat: true
-                                onTriggered: radio.scanUp()
+                                onTriggered: {
+                                    radio.scanUp()
+                                    scanLabel.color = '#59FF7F'
+                                }
                             }
                         }
 
