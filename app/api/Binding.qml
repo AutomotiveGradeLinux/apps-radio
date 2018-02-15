@@ -64,6 +64,7 @@ WebSocket {
                 sendSocketMessage("scan_stop", 'None')
                 scanningState = stoppedState
                 sendSocketMessage("frequency", { value: frequency })
+                root.stationFound()
             } else {
                 // This update was from scanning, clear state
                 scanningFreqUpdate = false

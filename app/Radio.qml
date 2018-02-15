@@ -181,33 +181,38 @@ ApplicationWindow {
                         }
 
                         ImageButton {
+                            id: scanDownBtn
                             offImage: './images/AGL_MediaPlayer_BackArrow.svg'
-                            Timer {
-                                running: parent.pressed
-                                triggeredOnStart: true
-                                interval: 100
-                                repeat: true
-                                onTriggered: {
-                                    radio.scanDown()
-                                    scanLabel.color = '#59FF7F'
+                            states: [
+                                State {
+                                    when: radio.state === radio.activeState
+                                    PropertyChanges {
+                                        target: scanDownBtn
+                                        onClicked: {
+                                            radio.scanDown()
+                                            scanLabel.color = '#59FF7F'
+                                        }
+                                    }
                                 }
-                            }
+                            ]
                         }
 
                         ImageButton {
+                            id: scanUpBtn
                             offImage: './images/AGL_MediaPlayer_ForwardArrow.svg'
-                            Timer {
-                                running: parent.pressed
-                                triggeredOnStart: true
-                                interval: 100
-                                repeat: true
-                                onTriggered: {
-                                    radio.scanUp()
-                                    scanLabel.color = '#59FF7F'
+                            states: [
+                                State {
+                                    when: radio.state === radio.activeState
+                                    PropertyChanges {
+                                        target: scanUpBtn
+                                        onClicked: {
+                                            radio.scanUp()
+                                            scanLabel.color = '#59FF7F'
+                                        }
+                                    }
                                 }
-                            }
+                            ]
                         }
-
                     }
                 }
             }
