@@ -24,6 +24,9 @@ import 'api' as API
 ApplicationWindow {
     id: root
 
+    width: container.width * container.scale
+    height: container.height * container.scale
+
     API.Binding {
         id: radio
 
@@ -36,6 +39,13 @@ ApplicationWindow {
             slider.value = frequency
         }
     }
+
+    Item {
+        id: container
+        anchors.centerIn: parent
+        width: 1080
+        height: 1487
+        scale: screenInfo.scale_factor()
 
     ColumnLayout {
         anchors.fill: parent
@@ -64,7 +74,7 @@ ApplicationWindow {
 
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: root.width * 0.02
+                    anchors.margins: container.width * 0.02
                     Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
@@ -258,4 +268,5 @@ ApplicationWindow {
             }
         }
     }
+}
 }
