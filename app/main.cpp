@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <radio.h>
 #include "PresetDataObject.h"
 
 #define APP_DATA_PRESETS_PATH	"/app-data/radio/presets.conf"
@@ -130,6 +131,8 @@ int main(int argc, char *argv[])
             qDebug("Surface %s got showWindow\n", graphic_role.toStdString().c_str());
             qwm->activateWindow(graphic_role);
         });
+
+        context->setContextProperty("radio", new Radio(bindingAddress, context));
 
         engine.load(QUrl(QStringLiteral("qrc:/Radio.qml")));
         QObject *root = engine.rootObjects().first();

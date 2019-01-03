@@ -19,7 +19,6 @@ import QtQuick 2.6
 import QtQuick.Layouts 1.1
 import QtQuick.Controls 2.0
 import AGL.Demo.Controls 1.0
-import 'api' as API
 
 ApplicationWindow {
     id: root
@@ -27,16 +26,13 @@ ApplicationWindow {
     width: container.width * container.scale
     height: container.height * container.scale
 
-    API.Binding {
-        id: radio
+    property string title
 
-        property string title
-
-        onBandChanged: frequency = minimumFrequency
-        onStationFound: title = stationId
-        onFrequencyChanged: {
-            title = ''
-            slider.value = frequency
+    function freq2str(freq) {
+        if (freq > 5000000) {
+            return '%1 MHz'.arg((freq / 1000000).toFixed(1))
+        } else {
+            return '%1 kHz'.arg((freq / 1000).toFixed(0))
         }
     }
 
@@ -88,7 +84,7 @@ ApplicationWindow {
 //                                onImage: './images/FM_Icons_AM.svg'
 //                                onCheckedChanged: {
 //                                    radio.band = checked ? radio.amBand : radio.fmBand
-//                                    radio.frequency = radio.minimumFrequency
+//                                    radio.frequency = radio.minFrequency
 //                                }
 //                            }
                         }
@@ -97,14 +93,14 @@ ApplicationWindow {
                             Label {
                                 id: label
                                 Layout.alignment: Layout.Center
-                                text: radio.freq2str(radio.frequency)
+                                text: freq2str(radio.frequency)
                                 horizontalAlignment: Label.AlignHCenter
                                 verticalAlignment: Label.AlignVCenter
                             }
                             Label {
                                 id: artist
                                 Layout.alignment: Layout.Center
-                                text: radio.title
+                                text: root.title
                                 horizontalAlignment: Label.AlignHCenter
                                 verticalAlignment: Label.AlignVCenter
                                 font.pixelSize: label.font.pixelSize * 0.6
@@ -114,22 +110,26 @@ ApplicationWindow {
                     Slider {
                         id: slider
                         Layout.fillWidth: true
-                        from: radio.minimumFrequency
-                        to: radio.maximumFrequency
+                        from: radio.minFrequency
+                        to: radio.maxFrequency
                         stepSize: radio.frequencyStep
                         snapMode: Slider.SnapOnRelease
-                        onValueChanged: radio.frequency = value
+                        value: radio.frequency
+                        onPressedChanged: {
+                            radio.frequency = value
+                            root.title = ''
+                        }
                         Label {
                             anchors.left: parent.left
                             anchors.bottom: parent.top
                             font.pixelSize: 32
-                            text: radio.freq2str(radio.minimumFrequency)
+                            text: freq2str(radio.minFrequency)
                         }
                         Label {
                             anchors.right: parent.right
                             anchors.bottom: parent.top
                             font.pixelSize: 32
-                            text: radio.freq2str(radio.maximumFrequency)
+                            text: freq2str(radio.maxFrequency)
                         }
                     }
                     RowLayout {
@@ -146,7 +146,12 @@ ApplicationWindow {
                                 triggeredOnStart: true
                                 interval: 100
                                 repeat: true
-                                onTriggered: radio.tuneDown()
+                                onTriggered: {
+                                    if(radio.frequency > radio.minFrequency) {
+                                        radio.frequency -= radio.frequencyStep
+                                        root.title = ''
+                                    }
+                                }
                             }
                         }
 
@@ -157,7 +162,12 @@ ApplicationWindow {
                                 triggeredOnStart: true
                                 interval: 100
                                 repeat: true
-                                onTriggered: radio.tuneUp()
+                                onTriggered: {
+                                    if(radio.frequency < radio.maxFrequency) {
+                                        radio.frequency += radio.frequencyStep
+                                        root.title = ''
+                                    }
+                                }
                             }
                         }
 
@@ -166,10 +176,12 @@ ApplicationWindow {
                         ImageButton {
                             id: play
                             offImage: './images/AGL_MediaPlayer_Player_Play.svg'
-                            onClicked: radio.start()
+                            onClicked: {
+                                radio.start()
+                            }
                             states: [
                                 State {
-                                    when: radio.state === radio.activeState
+                                    when: radio.playing
                                     PropertyChanges {
                                         target: play
                                         offImage: './images/AGL_MediaPlayer_Player_Pause.svg'
@@ -182,32 +194,44 @@ ApplicationWindow {
                         Item { Layout.fillWidth: true }
 
                         Label {
-                            //Layout.fillWidth: true
+                            id: scanLabel
                             text: 'SCAN'
+                            color: radio.scanning ? '#59FF7F' : '#FFFFFF'
                         }
 
                         ImageButton {
+                            id: scanBackwardBtn
                             offImage: './images/AGL_MediaPlayer_BackArrow.svg'
-                            Timer {
-                                running: parent.pressed
-                                triggeredOnStart: true
-                                interval: 100
-                                repeat: true
-                                onTriggered: radio.scanDown()
-                            }
+                            states: [
+                                State {
+                                    when: radio.playing
+                                    PropertyChanges {
+                                        target: scanBackwardBtn
+                                        onClicked: {
+                                            radio.scanBackward()
+                                            root.title = ''
+                                        }
+                                    }
+                                }
+                            ]
                         }
 
                         ImageButton {
+                            id: scanForwardBtn
                             offImage: './images/AGL_MediaPlayer_ForwardArrow.svg'
-                            Timer {
-                                running: parent.pressed
-                                triggeredOnStart: true
-                                interval: 100
-                                repeat: true
-                                onTriggered: radio.scanUp()
-                            }
+                            states: [
+                                State {
+                                    when: radio.playing
+                                    PropertyChanges {
+                                        target: scanForwardBtn
+                                        onClicked: {
+                                            radio.scanForward()
+                                            root.title = ''
+                                        }
+                                    }
+                                }
+                            ]
                         }
-
                     }
                 }
             }
@@ -231,7 +255,7 @@ ApplicationWindow {
                     onClicked: {
                         radio.band = model.modelData.band
                         radio.frequency = model.modelData.frequency
-                        radio.title = model.modelData.title
+                        root.title = model.modelData.title
                     }
 
                     RowLayout {
@@ -247,7 +271,7 @@ ApplicationWindow {
                             }
                             Label {
                                 Layout.fillWidth: true
-                                text: radio.freq2str(model.frequency)
+                                text: freq2str(model.frequency)
                                 color: '#59FF7F'
                                 font.pixelSize: 32
                             }
