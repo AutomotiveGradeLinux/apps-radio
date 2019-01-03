@@ -27,6 +27,8 @@
 #include <libhomescreen.hpp>
 #include <qlibwindowmanager.h>
 #include <stdlib.h>
+#include <mediaplayer.h>
+#include <radio.h>
 #include "PresetDataObject.h"
 
 int main(int argc, char *argv[])
@@ -125,6 +127,9 @@ int main(int argc, char *argv[])
                 }
             }
         });
+
+        context->setContextProperty("mediaplayer", new Mediaplayer(bindingAddress, context));
+        context->setContextProperty("radio", new Radio(bindingAddress, context));
 
         engine.load(QUrl(QStringLiteral("qrc:/Radio.qml")));
         QObject *root = engine.rootObjects().first();
