@@ -27,7 +27,11 @@
 #include <libhomescreen.hpp>
 #include <qlibwindowmanager.h>
 #include <stdlib.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 #include "PresetDataObject.h"
+
+#define APP_DATA_PRESETS_PATH	"/app-data/radio/presets.conf"
 
 int main(int argc, char *argv[])
 {
@@ -47,9 +51,9 @@ int main(int argc, char *argv[])
 
     // Read presets from configuration file
     //
-    // If HOME is set, use $HOME/app-data/radio/presets.conf, else fall back
-    // to the QSettings default locations with organization "AGL" and a
-    // file name of radio-presets.conf. See:
+    // If HOME is set, use $HOME/app-data/radio/presets.conf if it exists,
+    // else fall back to the QSettings default locations with organization
+    // "AGL" and a file name of radio-presets.conf. See:
     //
     // http://doc.qt.io/qt-5/qsettings.html#platform-specific-notes
     //
@@ -57,13 +61,22 @@ int main(int argc, char *argv[])
     //
     QSettings *pSettings = NULL;
     char *p = getenv("HOME");
+    bool settingsFound = false;
     if(p) {
-        QString confPath = p;
-        confPath.append("/app-data/radio/presets.conf");
-        pSettings = new QSettings(confPath, QSettings::NativeFormat);
-    } else {
-        pSettings = new QSettings("AGL", "radio-presets");
+	struct stat statbuf;
+        std::string presets(p);
+	presets += APP_DATA_PRESETS_PATH;
+	if(stat(presets.c_str(), &statbuf) == 0) {
+	    QString confPath = p;
+	    confPath.append(APP_DATA_PRESETS_PATH);
+	    pSettings = new QSettings(confPath, QSettings::NativeFormat);
+	    settingsFound = true;
+	}
     }
+    if(!settingsFound) {
+	    pSettings = new QSettings("AGL", "radio-presets");
+    }
+
     QList<QObject*> presetDataList;
     int size = pSettings->beginReadArray("fmPresets");
     for (int i = 0; i < size; ++i) {
