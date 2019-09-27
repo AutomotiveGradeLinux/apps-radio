@@ -89,10 +89,10 @@ WebSocket {
             break
         case msgid.retok:
             var verb = verbs.shift()
-            if (verb == "frequency_range") {
+            if (verb === "frequency_range") {
                 minimumFrequency = response.min
                 maximumFrequency = response.max
-            } else if (verb == "frequency_step") {
+            } else if (verb === "frequency_step") {
                 frequencyStep = response.step
             }
             break
