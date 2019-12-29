@@ -260,9 +260,6 @@ ApplicationWindow {
 
                     RowLayout {
                         anchors.fill: parent
-                        Image {
-                            source: './images/Radio_Active_Icon.svg'
-                        }
                         ColumnLayout {
                             Layout.fillWidth: true
                             Label {
