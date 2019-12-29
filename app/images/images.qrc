@@ -7,6 +7,5 @@
         <file>FM_Icons_AM.svg</file>
         <file>FM_Icons_FM.svg</file>
         <file>HMI_Radio_Equalizer.svg</file>
-        <file>Radio_Active_Icon.svg</file>
     </qresource>
 </RCC>
