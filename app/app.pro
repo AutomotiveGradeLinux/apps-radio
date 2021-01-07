@@ -5,7 +5,7 @@ HEADERS = PresetDataObject.h
 SOURCES = main.cpp PresetDataObject.cpp
 
 CONFIG += link_pkgconfig
-PKGCONFIG += libhomescreen qtappfw-radio
+PKGCONFIG += qtappfw-radio
 
 CONFIG(release, debug|release) {
     QMAKE_POST_LINK = $(STRIP) --strip-unneeded $(TARGET)
