@@ -1,18 +1,19 @@
+TEMPLATE = app
 TARGET = radio
-QT = quickcontrols2
+QT = qml quickcontrols2
+CONFIG += c++11 link_pkgconfig
+
+PKGCONFIG += qtappfw-radio
 
 HEADERS = PresetDataObject.h
 SOURCES = main.cpp PresetDataObject.cpp
-
-CONFIG += link_pkgconfig
-PKGCONFIG += qtappfw-radio
-
-CONFIG(release, debug|release) {
-    QMAKE_POST_LINK = $(STRIP) --strip-unneeded $(TARGET)
-}
 
 RESOURCES += \
     radio.qrc \
     images/images.qrc
 
-include(app.pri)
+target.path = /usr/bin
+target.files += $${OUT_PWD}/$${TARGET}
+target.CONFIG = no_check_exist executable
+
+INSTALLS += target
