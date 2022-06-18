@@ -51,16 +51,19 @@ ApplicationWindow {
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.preferredHeight: 3
+            Layout.preferredHeight: 1080
             clip: true
+
             Image {
+                anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
-                anchors.bottom: parent.bottom
-                fillMode: Image.PreserveAspectFit
+                anchors.bottom: controls.top
+                fillMode: Image.Stretch
                 source: './images/HMI_Radio_Equalizer.svg'
             }
             Item {
+                id: controls
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
@@ -242,7 +245,8 @@ ApplicationWindow {
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.preferredHeight: 2
+            Layout.preferredHeight: 480
+
             ListView {
                 anchors.fill: parent
                 anchors.leftMargin: 50
