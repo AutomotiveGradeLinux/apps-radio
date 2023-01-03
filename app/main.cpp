@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <radio.h>
+#include <RadioClient.h>
 #include "PresetDataObject.h"
 
 #define APP_DATA_PRESETS_PATH	"/app-data/radio/presets.conf"
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 	QQmlApplicationEngine engine;
 	QQmlContext *context = engine.rootContext();
 	context->setContextProperty("presetModel", QVariant::fromValue(presetDataList));
-	context->setContextProperty("radio", new Radio(context));
+	context->setContextProperty("radio", new RadioClient(context));
 	engine.load(QUrl(QStringLiteral("qrc:/Radio.qml")));
 	return app.exec();
 }
